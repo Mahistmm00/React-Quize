@@ -1,8 +1,8 @@
-import { useEffect, useReducer } from "react";
+import { QuizProvider, useQuiz } from "./contexts/QuizContext";
 import Header from "./Header";
 import Main1 from "./Main1";
-import Loader from "./Loader";
-import Error from "./Error";
+import SectionList from "./components/quiz/SectionList";
+import AddSectionForm from "./components/quiz/AddSectionForm";
 import StartScreen from "./StartScreen";
 import Question from "./Question";
 import NextQuestion from "./NextQuestion";
@@ -10,96 +10,62 @@ import Progress from "./Progress";
 import FinishScreen from "./FinishScreen";
 import Footer from "./Footer";
 import Timer from "./Timer";
+import Loader from "./components/ui/Loader";
+import Error from "./components/ui/Error";
+import Button from "./components/ui/Button";
 
-const SECS_OF_QUESTIONS = 30;
-
-const initialState = {
-  questions: [],
-  status: "loading",
-  index: 0,
-  answer: null,
-  points: 0,
-  highScore: 0,
-  remainingTime: null, // loading, error, ready, active, finished
-};
-
-function reducer(state, action) {
-  const question = state.questions[state.index];
-  switch (action.type) {
-    case "dataReceived":
-      return { ...state, questions: action.payload, status: "ready" };
-    case "dataFailed":
-      return { ...state, status: "error" };
-    case "start":
-      return {
-        ...state,
-        status: "active",
-        remainingTime: state.questions.length * SECS_OF_QUESTIONS,
-      };
-    case "newAnswer":
-      return {
-        ...state,
-        answer: action.payload,
-        points:
-          action.payload === question.correctOption
-            ? state.points + question.points
-            : state.points,
-      };
-    case "nextQuestion":
-      return { ...state, index: state.index + 1, answer: null };
-    case "finish":
-      return {
-        ...state,
-        status: "finished",
-        highScore:
-          state.points > state.highScore ? state.points : state.highScore,
-      };
-    case "restart":
-      return {
-        ...initialState,
-        questions: state.questions,
-        status: "ready",
-      };
-
-    case "tick":
-      return {
-        ...state,
-        remainingTime: state.remainingTime - 1,
-        status: state.remainingTime === 0 ? "finished" : state.status,
-      };
-
-    default:
-      throw new Error("Unknown action");
-  }
+function MainMenu({ onOptionSelect }) {
+  return (
+    <div className="main-menu">
+      <h2>Welcome to QuizMaster</h2>
+      <p>Choose an option to get started</p>
+      <div className="menu-options">
+        <div className="menu-card">
+          <h3>📚 Take Quiz</h3>
+          <p>Browse quiz sections and test your knowledge</p>
+          <Button onClick={() => onOptionSelect("sections")}>
+            Browse Quizzes
+          </Button>
+        </div>
+        <div className="menu-card">
+          <h3>➕ Add Content</h3>
+          <p>Create new quiz sections and questions</p>
+          <Button onClick={() => onOptionSelect("add")}>Add Questions</Button>
+        </div>
+      </div>
+    </div>
+  );
 }
-function App() {
-  const [
-    { questions, status, index, answer, points, highScore, remainingTime },
+
+function QuizApp() {
+  const {
+    questions,
+    status,
+    index,
+    answer,
+    points,
+    highScore,
+    remainingTime,
     dispatch,
-  ] = useReducer(reducer, initialState);
+  } = useQuiz();
 
   const numberOfQuestions = questions.length;
-  const maxPoints = questions.reduce((prev, curr) => prev + curr.points, 0);
+  const maxPoints =
+    questions.length > 0
+      ? questions.reduce((prev, curr) => prev + curr.points, 0)
+      : 0;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      await fetch("http://localhost:8000/questions")
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("Network response was not ok");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          dispatch({ type: "dataReceived", payload: data });
-        })
-        .catch(() => {
-          dispatch({ type: "dataFailed" });
-        });
-    };
+  const handleOptionSelect = (option) => {
+    if (option === "sections") {
+      dispatch({ type: "showSections" });
+    } else if (option === "add") {
+      dispatch({ type: "showAddForm" });
+    }
+  };
 
-    fetchData();
-  }, []);
+  const handleBackToMenu = () => {
+    dispatch({ type: "backToMenu" });
+  };
 
   return (
     <div className="app">
@@ -107,6 +73,23 @@ function App() {
       <Main1>
         {status === "loading" && <Loader />}
         {status === "error" && <Error />}
+        {status === "menu" && <MainMenu onOptionSelect={handleOptionSelect} />}
+        {status === "sections" && (
+          <>
+            <Button onClick={handleBackToMenu} className="back-btn">
+              ← Back to Menu
+            </Button>
+            <SectionList />
+          </>
+        )}
+        {status === "addForm" && (
+          <>
+            <Button onClick={handleBackToMenu} className="back-btn">
+              ← Back to Menu
+            </Button>
+            <AddSectionForm onSectionAdded={handleBackToMenu} />
+          </>
+        )}
         {status === "ready" && (
           <StartScreen
             numberOfQuestions={numberOfQuestions}
@@ -148,6 +131,14 @@ function App() {
         )}
       </Main1>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <QuizProvider>
+      <QuizApp />
+    </QuizProvider>
   );
 }
 
