@@ -19,7 +19,10 @@ export default function SectionList() {
           const data = await fetchSections();
           const parsedData =
             typeof data.body === "string" ? JSON.parse(data.body) : data;
-          dispatch({ type: "sectionsReceived", payload: parsedData.sections || [] });
+          dispatch({
+            type: "sectionsReceived",
+            payload: parsedData.sections || [],
+          });
         } catch (err) {
           dispatch({ type: "error" });
         }
@@ -35,14 +38,14 @@ export default function SectionList() {
       const data = await fetchQuestions(section.sectionId);
       const parsedData =
         typeof data.body === "string" ? JSON.parse(data.body) : data;
-      
+
       // Transform questions to match expected format
-      const transformedQuestions = parsedData.questions.map(q => ({
+      const transformedQuestions = parsedData.questions.map((q) => ({
         ...q,
         correctOption: q.options.indexOf(q.answer),
-        points: q.points || 10
+        points: q.points || 10,
       }));
-      
+
       dispatch({ type: "questionsReceived", payload: transformedQuestions });
     } catch (err) {
       dispatch({ type: "error" });
@@ -54,7 +57,7 @@ export default function SectionList() {
 
   return (
     <div className="sections">
-      <h2>Choose a Quiz Section</h2>
+      <h2 className="section-heading">Choose a Quiz Section</h2>
       <div className="section-grid">
         {sections.map((section) => (
           <div key={section.sectionId} className="section-card">

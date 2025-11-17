@@ -75,14 +75,14 @@ export default function AddSectionForm({ onSectionAdded }) {
       // Transform data to match API format
       const transformedData = {
         ...formData,
-        questions: formData.questions.map(q => ({
+        questions: formData.questions.map((q) => ({
           question: q.question,
           options: q.options,
           answer: q.options[q.correctOption],
-          points: q.points
-        }))
+          points: q.points,
+        })),
       };
-      
+
       await addSection(transformedData);
       onSectionAdded();
       setFormData({
@@ -103,13 +103,20 @@ export default function AddSectionForm({ onSectionAdded }) {
   };
 
   return (
-    <div className="add-section-container" style={{width: '100%', maxWidth: 'none'}}>
+    <div
+      className="add-section-container"
+      style={{ width: "100%", maxWidth: "none" }}
+    >
       <div className="form-header">
-        <h2>🎯 Create New Quiz Section</h2>
+        <h2 className="section-heading">Create New Quiz Section</h2>
         <p>Build engaging quizzes with multiple choice questions</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="add-section-form" style={{width: '100%', maxWidth: 'none'}}>
+      <form
+        onSubmit={handleSubmit}
+        className="add-section-form"
+        style={{ width: "100%", maxWidth: "none" }}
+      >
         {/* Section Info */}
         <div className="section-info">
           <div className="section-details">
@@ -131,7 +138,9 @@ export default function AddSectionForm({ onSectionAdded }) {
               <textarea
                 placeholder="Brief description of what this quiz covers..."
                 value={formData.description}
-                onChange={(e) => handleInputChange("description", e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 required
                 rows="3"
               />
@@ -145,7 +154,12 @@ export default function AddSectionForm({ onSectionAdded }) {
             </div>
             <div className="stat-item">
               <span className="stat-label">Total Points:</span>
-              <span className="stat-value">{formData.questions.reduce((sum, q) => sum + (q.points || 0), 0)}</span>
+              <span className="stat-value">
+                {formData.questions.reduce(
+                  (sum, q) => sum + (q.points || 0),
+                  0
+                )}
+              </span>
             </div>
           </div>
         </div>
@@ -154,7 +168,11 @@ export default function AddSectionForm({ onSectionAdded }) {
         <div className="questions-section">
           <div className="section-header">
             <h3>❓ Questions ({formData.questions.length})</h3>
-            <Button type="button" onClick={addQuestion} className="add-question-btn">
+            <Button
+              type="button"
+              onClick={addQuestion}
+              className="add-question-btn"
+            >
               ➕ Add Question
             </Button>
           </div>
@@ -193,15 +211,27 @@ export default function AddSectionForm({ onSectionAdded }) {
                 </div>
 
                 <div className="options-section">
-                  <label className="options-label">Answer Options * <span className="hint">(Select the correct answer)</span></label>
+                  <label className="options-label">
+                    Answer Options *{" "}
+                    <span className="hint">(Select the correct answer)</span>
+                  </label>
                   <div className="options-list">
                     {question.options.map((option, oIndex) => (
-                      <div key={oIndex} className={`option-item ${question.correctOption === oIndex ? 'correct' : ''}`}>
+                      <div
+                        key={oIndex}
+                        className={`option-item ${
+                          question.correctOption === oIndex ? "correct" : ""
+                        }`}
+                      >
                         <div className="option-input">
-                          <span className="option-letter">{String.fromCharCode(65 + oIndex)}</span>
+                          <span className="option-letter">
+                            {String.fromCharCode(65 + oIndex)}
+                          </span>
                           <input
                             type="text"
-                            placeholder={`Option ${String.fromCharCode(65 + oIndex)}`}
+                            placeholder={`Option ${String.fromCharCode(
+                              65 + oIndex
+                            )}`}
                             value={option}
                             onChange={(e) =>
                               handleOptionChange(qIndex, oIndex, e.target.value)
@@ -214,7 +244,11 @@ export default function AddSectionForm({ onSectionAdded }) {
                               name={`correct-${qIndex}`}
                               checked={question.correctOption === oIndex}
                               onChange={() =>
-                                handleQuestionChange(qIndex, "correctOption", oIndex)
+                                handleQuestionChange(
+                                  qIndex,
+                                  "correctOption",
+                                  oIndex
+                                )
                               }
                             />
                             <span className="radio-custom"></span>
@@ -226,7 +260,7 @@ export default function AddSectionForm({ onSectionAdded }) {
                   </div>
                 </div>
               </div>
-              
+
               <div className="question-sidebar">
                 <h4>⚙️ Settings</h4>
                 <div className="form-group points-group">
@@ -247,8 +281,18 @@ export default function AddSectionForm({ onSectionAdded }) {
                   />
                 </div>
                 <div className="question-info">
-                  <p><strong>Correct Answer:</strong> {String.fromCharCode(65 + question.correctOption)}</p>
-                  <p><strong>Difficulty:</strong> {question.points <= 10 ? 'Easy' : question.points <= 20 ? 'Medium' : 'Hard'}</p>
+                  <p>
+                    <strong>Correct Answer:</strong>{" "}
+                    {String.fromCharCode(65 + question.correctOption)}
+                  </p>
+                  <p>
+                    <strong>Difficulty:</strong>{" "}
+                    {question.points <= 10
+                      ? "Easy"
+                      : question.points <= 20
+                      ? "Medium"
+                      : "Hard"}
+                  </p>
                 </div>
               </div>
             </div>
@@ -258,7 +302,10 @@ export default function AddSectionForm({ onSectionAdded }) {
         <div className="form-footer">
           <div className="quiz-summary">
             <span>📊 Total Questions: {formData.questions.length}</span>
-            <span>🎯 Total Points: {formData.questions.reduce((sum, q) => sum + (q.points || 0), 0)}</span>
+            <span>
+              🎯 Total Points:{" "}
+              {formData.questions.reduce((sum, q) => sum + (q.points || 0), 0)}
+            </span>
           </div>
           <Button type="submit" disabled={loading} className="submit-btn">
             {loading ? "Creating Quiz..." : "🚀 Create Quiz Section"}
